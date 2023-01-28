@@ -8,6 +8,8 @@ import (
 
 // Random unit vector inside the XY plane.
 // Its Z component is zero.
+// Reference:
+// https://github.com/fogleman/fauxgl/blob/27cddc103802008bbda73dc74cab49038d96fdf3/vector.go#L16
 func RanUnitVecXY() fauxgl.Vector {
 	for {
 		x := rand.Float64()*2 - 1
