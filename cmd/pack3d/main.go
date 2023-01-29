@@ -59,7 +59,7 @@ func main() {
 		done = timed("centering mesh")
 		mesh.Center()
 
-		if true {
+		if pack3d.Restricted {
 			Bottom(mesh)
 		}
 
