@@ -58,6 +58,11 @@ func main() {
 
 		done = timed("centering mesh")
 		mesh.Center()
+
+		if true {
+			Bottom(mesh)
+		}
+
 		done()
 
 		done = timed("building bvh tree")
@@ -90,4 +95,9 @@ func main() {
 		}
 		model.Reset()
 	}
+}
+
+// Local coordinate system origin is moved to bottom-center of bounding box.
+func Bottom(m *fauxgl.Mesh) fauxgl.Matrix {
+	return m.MoveTo(fauxgl.Vector{}, fauxgl.Vector{X: 0.5, Y: 0.5, Z: 0.0})
 }
