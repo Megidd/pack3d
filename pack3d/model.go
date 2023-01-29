@@ -11,9 +11,14 @@ var Rotations []fauxgl.Matrix
 
 func init() {
 	for i := 0; i < 4; i++ {
-		up := AxisZ.Vector()
-		m := fauxgl.Rotate(up, float64(i)*fauxgl.Radians(90))
-		Rotations = append(Rotations, m)
+		for s := -1; s <= 1; s += 2 {
+			for a := 1; a <= 3; a++ {
+				up := AxisZ.Vector()
+				m := fauxgl.Rotate(up, float64(i)*fauxgl.Radians(90))
+				m = m.RotateTo(up, Axis(a).Vector().MulScalar(float64(s)))
+				Rotations = append(Rotations, m)
+			}
+		}
 	}
 }
 
@@ -68,7 +73,7 @@ func (m *Model) add(mesh *fauxgl.Mesh, trees []Tree) {
 	d := 1.0
 	for !m.ValidChange(index) {
 		item.Rotation = rand.Intn(len(Rotations))
-		item.Translation = RanUnitVecXY().MulScalar(d)
+		item.Translation = fauxgl.RandomUnitVector().MulScalar(d)
 		d *= 1.2
 	}
 	tree := trees[0]
@@ -174,8 +179,7 @@ func (m *Model) DoMove() Undo {
 			item.Rotation = rand.Intn(len(Rotations))
 		} else {
 			// translate
-			// For 2D, offset is in XY plane.
-			offset := Axis(rand.Intn(2) + 1).Vector()
+			offset := Axis(rand.Intn(3) + 1).Vector()
 			offset = offset.MulScalar(rand.NormFloat64() * m.Deviation)
 			item.Translation = item.Translation.Add(offset)
 		}
