@@ -13,14 +13,14 @@ import (
 // 2. The Z axis is upward.
 // 3. The only transformations allowed are moving along X and Y and rotating around Z axis.
 //
-var restricted bool = true
+var Restricted bool = true
 
 var Rotations []fauxgl.Matrix
 
 func init() {
 	for i := 0; i < 4; i++ {
 
-		if restricted {
+		if Restricted {
 			up := AxisZ.Vector()
 			m := fauxgl.Rotate(up, float64(i)*fauxgl.Radians(90))
 			Rotations = append(Rotations, m)
@@ -91,7 +91,7 @@ func (m *Model) add(mesh *fauxgl.Mesh, trees []Tree) {
 		item.Rotation = rand.Intn(len(Rotations))
 		item.Translation = fauxgl.RandomUnitVector().MulScalar(d)
 
-		if restricted {
+		if Restricted {
 			// Translation is inside XY plane.
 			item.Translation = RandomUnitVecXY().MulScalar(d)
 		}
@@ -203,7 +203,7 @@ func (m *Model) DoMove() Undo {
 			// translate
 			offset := Axis(rand.Intn(3) + 1).Vector()
 
-			if restricted {
+			if Restricted {
 				// Offset is inside XY plane.
 				offset = Axis(rand.Intn(2) + 1).Vector()
 			}
