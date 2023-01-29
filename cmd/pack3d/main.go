@@ -60,7 +60,8 @@ func main() {
 		mesh.Center()
 
 		if pack3d.Restricted {
-			Bottom(mesh)
+			// Don't call this. It would cause collisions between 3D models.
+			//Bottom(mesh)
 		}
 
 		done()
