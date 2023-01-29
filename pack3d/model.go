@@ -90,6 +90,12 @@ func (m *Model) add(mesh *fauxgl.Mesh, trees []Tree) {
 	for !m.ValidChange(index) {
 		item.Rotation = rand.Intn(len(Rotations))
 		item.Translation = fauxgl.RandomUnitVector().MulScalar(d)
+
+		if restricted {
+			// Translation is inside XY plane.
+			item.Translation = RandomUnitVecXY().MulScalar(d)
+		}
+
 		d *= 1.2
 	}
 	tree := trees[0]
@@ -196,6 +202,12 @@ func (m *Model) DoMove() Undo {
 		} else {
 			// translate
 			offset := Axis(rand.Intn(3) + 1).Vector()
+
+			if restricted {
+				// Offset is inside XY plane.
+				offset = Axis(rand.Intn(2) + 1).Vector()
+			}
+
 			offset = offset.MulScalar(rand.NormFloat64() * m.Deviation)
 			item.Translation = item.Translation.Add(offset)
 		}
@@ -220,4 +232,20 @@ func (m *Model) Copy() Annealable {
 		items[i] = item.Copy()
 	}
 	return &Model{items, m.MinVolume, m.MaxVolume, m.Deviation}
+}
+
+// Random unit vector inside XY plane.
+// Its Z component is zero.
+// Reference:
+// https://github.com/fogleman/fauxgl/blob/27cddc103802008bbda73dc74cab49038d96fdf3/vector.go#L16
+func RandomUnitVecXY() fauxgl.Vector {
+	for {
+		x := rand.Float64()*2 - 1
+		y := rand.Float64()*2 - 1
+		z := float64(0)
+		if x*x+y*y+z*z > 1 {
+			continue
+		}
+		return fauxgl.Vector{X: x, Y: y, Z: z}.Normalize()
+	}
 }
