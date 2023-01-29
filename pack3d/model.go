@@ -7,10 +7,26 @@ import (
 	"github.com/fogleman/fauxgl"
 )
 
+// Restricted mode means:
+//
+// 1. Assume there is a 3D print floor.
+// 2. The Z axis is upward.
+// 3. The only transformations allowed are moving along X and Y and rotating around Z axis.
+//
+var restricted bool = true
+
 var Rotations []fauxgl.Matrix
 
 func init() {
 	for i := 0; i < 4; i++ {
+
+		if restricted {
+			up := AxisZ.Vector()
+			m := fauxgl.Rotate(up, float64(i)*fauxgl.Radians(90))
+			Rotations = append(Rotations, m)
+			continue
+		}
+
 		for s := -1; s <= 1; s += 2 {
 			for a := 1; a <= 3; a++ {
 				up := AxisZ.Vector()
