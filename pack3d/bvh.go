@@ -7,6 +7,12 @@ type Tree []fauxgl.Box
 func NewTreeForMesh(mesh *fauxgl.Mesh, depth int) Tree {
 	mesh = mesh.Copy()
 	mesh.Center()
+
+	if Restricted {
+		// Move local origin to bottom-center of b-box.
+		Bottom(mesh)
+	}
+
 	boxes := make([]fauxgl.Box, len(mesh.Triangles))
 	for i, t := range mesh.Triangles {
 		boxes[i] = t.BoundingBox()

@@ -60,7 +60,7 @@ func main() {
 		mesh.Center()
 
 		if pack3d.Restricted {
-			// TODO: It would cause collisions between 3D models. Why?
+			// Move local origin to bottom-center of b-box.
 			pack3d.Bottom(mesh)
 		}
 
