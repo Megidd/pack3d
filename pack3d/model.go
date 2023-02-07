@@ -12,7 +12,7 @@ import (
 // 1. Assume there is a 3D print floor.
 // 2. The Z axis is upward.
 // 3. The only transformations allowed are moving along X and Y and rotating around Z axis.
-//
+// 4. The bottom of all 3D models are aligned on the 3D print floor.
 var Restricted bool = true
 
 var Rotations []fauxgl.Matrix
