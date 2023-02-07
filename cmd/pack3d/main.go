@@ -60,8 +60,8 @@ func main() {
 		mesh.Center()
 
 		if pack3d.Restricted {
-			// Don't call this. It would cause collisions between 3D models.
-			//Bottom(mesh)
+			// TODO: It would cause collisions between 3D models. Why?
+			pack3d.Bottom(mesh)
 		}
 
 		done()
@@ -96,9 +96,4 @@ func main() {
 		}
 		model.Reset()
 	}
-}
-
-// Local coordinate system origin is moved to bottom-center of bounding box.
-func Bottom(m *fauxgl.Mesh) fauxgl.Matrix {
-	return m.MoveTo(fauxgl.Vector{}, fauxgl.Vector{X: 0.5, Y: 0.5, Z: 0.0})
 }
