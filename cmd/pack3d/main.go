@@ -8,8 +8,9 @@ import (
 	"strconv"
 	"time"
 
+	"pack3d/pack3d"
+
 	"github.com/fogleman/fauxgl"
-	"github.com/fogleman/pack3d/pack3d"
 )
 
 const (
@@ -32,7 +33,7 @@ func main() {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	model := pack3d.NewModel()
+	model := pack3d.NewModel(true)
 	count := 1
 	ok := false
 	var totalVolume float64
@@ -54,10 +55,6 @@ func main() {
 		size := mesh.BoundingBox().Size()
 		fmt.Printf("  %d triangles\n", len(mesh.Triangles))
 		fmt.Printf("  %g x %g x %g\n", size.X, size.Y, size.Z)
-
-		done = timed("centering mesh")
-		mesh.Center()
-		done()
 
 		done = timed("building bvh tree")
 		model.Add(mesh, bvhDetail, count)
