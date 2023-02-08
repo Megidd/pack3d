@@ -7,12 +7,13 @@ import (
 	"github.com/fogleman/fauxgl"
 )
 
-var Rotations []fauxgl.Matrix
+// Fill out allowed rotations.
+func rotations(restricted bool) []fauxgl.Matrix {
+	Rotations := []fauxgl.Matrix{}
 
-func init() {
 	for i := 0; i < 4; i++ {
 
-		if Restricted {
+		if restricted {
 			up := AxisZ.Vector()
 			m := fauxgl.Rotate(up, float64(i)*fauxgl.Radians(90))
 			Rotations = append(Rotations, m)
@@ -28,6 +29,8 @@ func init() {
 			}
 		}
 	}
+
+	return Rotations
 }
 
 type Undo struct {
@@ -43,8 +46,8 @@ type Item struct {
 	Translation fauxgl.Vector
 }
 
-func (item *Item) Matrix() fauxgl.Matrix {
-	return Rotations[item.Rotation].Translate(item.Translation)
+func (item *Item) Matrix(m *Model) fauxgl.Matrix {
+	return m.Rotations[item.Rotation].Translate(item.Translation)
 }
 
 func (item *Item) Copy() *Item {
@@ -53,20 +56,44 @@ func (item *Item) Copy() *Item {
 }
 
 type Model struct {
-	Items     []*Item
-	MinVolume float64
-	MaxVolume float64
-	Deviation float64
+	Items      []*Item
+	MinVolume  float64
+	MaxVolume  float64
+	Deviation  float64
+	Rotations  []fauxgl.Matrix // Allowed rotations when randomly transforming the 3D model.
+	Restricted bool
 }
 
-func NewModel() *Model {
-	return &Model{nil, 0, 0, 1}
+// Restricted mode means:
+// 1. Assume there is a 3D print floor.
+// 2. The Z axis is upward.
+// 3. The only transformations allowed are moving along X and Y and rotating around Z axis.
+// 4. The bottom of all 3D models are aligned on the 3D print floor.
+func NewModel(restricted bool) *Model {
+	m := Model{
+		Items:      nil,
+		MinVolume:  0,
+		MaxVolume:  0,
+		Deviation:  1,
+		Rotations:  rotations(restricted),
+		Restricted: restricted,
+	}
+	return &m
 }
 
+// Local origin of mesh is properly set by this function.
 func (m *Model) Add(mesh *fauxgl.Mesh, detail, count int) {
+	if m.Restricted {
+		// Move local origin to bottom-center of b-box.
+		Bottom(mesh)
+	} else {
+		// Move local origin to center of b-box.
+		mesh.Center()
+	}
+
 	tree := NewTreeForMesh(mesh, detail)
-	trees := make([]Tree, len(Rotations))
-	for i, m := range Rotations {
+	trees := make([]Tree, len(m.Rotations))
+	for i, m := range m.Rotations {
 		trees[i] = tree.Transform(m)
 	}
 	for i := 0; i < count; i++ {
@@ -80,12 +107,13 @@ func (m *Model) add(mesh *fauxgl.Mesh, trees []Tree) {
 	m.Items = append(m.Items, &item)
 	d := 1.0
 	for !m.ValidChange(index) {
-		item.Rotation = rand.Intn(len(Rotations))
-		item.Translation = fauxgl.RandomUnitVector().MulScalar(d)
+		item.Rotation = rand.Intn(len(m.Rotations))
 
-		if Restricted {
+		if m.Restricted {
 			// Translation is inside XY plane.
 			item.Translation = RandomUnitVecXY().MulScalar(d)
+		} else {
+			item.Translation = fauxgl.RandomUnitVector().MulScalar(d)
 		}
 
 		d *= 1.2
@@ -114,7 +142,7 @@ func (m *Model) Meshes() []*fauxgl.Mesh {
 	result := make([]*fauxgl.Mesh, len(m.Items))
 	for i, item := range m.Items {
 		mesh := item.Mesh.Copy()
-		mesh.Transform(item.Matrix())
+		mesh.Transform(item.Matrix(m))
 		result[i] = mesh
 	}
 	return result
@@ -190,14 +218,16 @@ func (m *Model) DoMove() Undo {
 	for {
 		if rand.Intn(4) == 0 {
 			// rotate
-			item.Rotation = rand.Intn(len(Rotations))
+			item.Rotation = rand.Intn(len(m.Rotations))
 		} else {
 			// translate
-			offset := Axis(rand.Intn(3) + 1).Vector()
+			var offset fauxgl.Vector
 
-			if Restricted {
+			if m.Restricted {
 				// Offset is inside XY plane.
 				offset = Axis(rand.Intn(2) + 1).Vector()
+			} else {
+				offset = Axis(rand.Intn(3) + 1).Vector()
 			}
 
 			offset = offset.MulScalar(rand.NormFloat64() * m.Deviation)
@@ -223,5 +253,13 @@ func (m *Model) Copy() Annealable {
 	for i, item := range m.Items {
 		items[i] = item.Copy()
 	}
-	return &Model{items, m.MinVolume, m.MaxVolume, m.Deviation}
+	copy := Model{
+		Items:      items,
+		MinVolume:  m.MinVolume,
+		MaxVolume:  m.MaxVolume,
+		Deviation:  m.Deviation,
+		Rotations:  m.Rotations,
+		Restricted: m.Restricted,
+	}
+	return &copy
 }

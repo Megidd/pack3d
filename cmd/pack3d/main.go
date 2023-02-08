@@ -33,7 +33,7 @@ func main() {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	model := pack3d.NewModel()
+	model := pack3d.NewModel(true)
 	count := 1
 	ok := false
 	var totalVolume float64
@@ -55,16 +55,6 @@ func main() {
 		size := mesh.BoundingBox().Size()
 		fmt.Printf("  %d triangles\n", len(mesh.Triangles))
 		fmt.Printf("  %g x %g x %g\n", size.X, size.Y, size.Z)
-
-		done = timed("centering mesh")
-		mesh.Center()
-
-		if pack3d.Restricted {
-			// Move local origin to bottom-center of b-box.
-			pack3d.Bottom(mesh)
-		}
-
-		done()
 
 		done = timed("building bvh tree")
 		model.Add(mesh, bvhDetail, count)
