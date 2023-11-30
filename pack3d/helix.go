@@ -2,6 +2,7 @@ package pack3d
 
 import (
 	"math"
+	"math/rand"
 
 	"github.com/fogleman/fauxgl"
 )
@@ -35,6 +36,37 @@ func (h *Helix) Coord(i int) fauxgl.Vector {
 		X: x,
 		Y: y,
 		Z: z,
+	}
+}
+
+func (h *Helix) Tangent(i int) fauxgl.Vector {
+	b := h.Pitch / (2.0 * math.Pi)
+	t := float64(i) * h.Step
+
+	// The derivatives of x, y, and z with respect to t
+	dx := -h.Radius * math.Sin(t)
+	dy := h.Radius * math.Cos(t)
+	dz := b
+
+	return fauxgl.Vector{
+		X: dx,
+		Y: dy,
+		Z: dz,
+	}
+}
+
+func (h *Helix) TangentRandom(i int) fauxgl.Vector {
+	tangentPos := h.Tangent(i).Normalize()
+	tangentNeg := tangentPos.MulScalar(-1)
+
+	zeroOrOne := rand.Intn(2)
+
+	if zeroOrOne == 0 {
+		return tangentPos
+	} else if zeroOrOne == 1 {
+		return tangentNeg
+	} else {
+		return fauxgl.Vector{}
 	}
 }
 

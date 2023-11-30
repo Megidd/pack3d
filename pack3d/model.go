@@ -230,7 +230,7 @@ func (m *Model) DoMove() Undo {
 
 			if m.Restricted {
 				// Offset is on a curve.
-				offset = h.Coord(i)
+				offset = h.TangentRandom(i)
 			} else {
 				offset = Axis(rand.Intn(3) + 1).Vector()
 			}
