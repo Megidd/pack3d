@@ -7,6 +7,8 @@ import (
 	"github.com/fogleman/fauxgl"
 )
 
+var h *Helix
+
 // Fill out allowed rotations.
 func rotations(restricted bool) []fauxgl.Matrix {
 	Rotations := []fauxgl.Matrix{}
@@ -62,7 +64,6 @@ type Model struct {
 	Deviation  float64
 	Rotations  []fauxgl.Matrix // Allowed rotations when randomly transforming the 3D model.
 	Restricted bool
-	Helix      *Helix
 }
 
 // Restricted mode means:
@@ -71,6 +72,8 @@ type Model struct {
 // 3. The only transformations allowed are moving along X and Y and rotating around Z axis.
 // 4. The bottom of all 3D models are aligned on the 3D print floor.
 func NewModel(restricted bool) *Model {
+	h = NewHelix(50, 40, 10)
+
 	m := Model{
 		Items:      nil,
 		MinVolume:  0,
@@ -78,7 +81,6 @@ func NewModel(restricted bool) *Model {
 		Deviation:  1,
 		Rotations:  rotations(restricted),
 		Restricted: restricted,
-		Helix:      NewHelix(50, 40, 10),
 	}
 	return &m
 }
@@ -113,12 +115,12 @@ func (m *Model) add(mesh *fauxgl.Mesh, trees []Tree) {
 
 		if m.Restricted {
 			// Translation is on a curve.
-			item.Translation = m.Helix.Coord(index)
+			item.Translation = h.Coord(index)
 		} else {
 			item.Translation = fauxgl.RandomUnitVector().MulScalar(d)
 		}
 
-		m.Helix.MulStep(1.2)
+		h.MulStep(1.2)
 		d *= 1.2
 	}
 	tree := trees[0]
@@ -228,7 +230,7 @@ func (m *Model) DoMove() Undo {
 
 			if m.Restricted {
 				// Offset is on a curve.
-				offset = m.Helix.OffsetRandom(i)
+				offset = h.Coord(i)
 			} else {
 				offset = Axis(rand.Intn(3) + 1).Vector()
 			}
