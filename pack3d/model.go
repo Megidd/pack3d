@@ -13,7 +13,7 @@ func rotations(restricted bool) []fauxgl.Matrix {
 
 	for i := 0; i < 4; i++ {
 
-		if restricted {
+		if false {
 			up := AxisZ.Vector()
 			m := fauxgl.Rotate(up, float64(i)*fauxgl.Radians(90))
 			Rotations = append(Rotations, m)
@@ -62,6 +62,7 @@ type Model struct {
 	Deviation  float64
 	Rotations  []fauxgl.Matrix // Allowed rotations when randomly transforming the 3D model.
 	Restricted bool
+	Curve      Curve
 }
 
 // Restricted mode means:
@@ -77,6 +78,7 @@ func NewModel(restricted bool) *Model {
 		Deviation:  1,
 		Rotations:  rotations(restricted),
 		Restricted: restricted,
+		Curve:      NewCurve(),
 	}
 	return &m
 }
@@ -110,12 +112,13 @@ func (m *Model) add(mesh *fauxgl.Mesh, trees []Tree) {
 		item.Rotation = rand.Intn(len(m.Rotations))
 
 		if m.Restricted {
-			// Translation is inside XY plane.
-			item.Translation = RandomUnitVecXY().MulScalar(d)
+			// Translation is on a curve.
+			item.Translation = m.Curve.Coord(index)
 		} else {
 			item.Translation = fauxgl.RandomUnitVector().MulScalar(d)
 		}
 
+		m.Curve.MulStep(1.2)
 		d *= 1.2
 	}
 	tree := trees[0]
@@ -224,8 +227,8 @@ func (m *Model) DoMove() Undo {
 			var offset fauxgl.Vector
 
 			if m.Restricted {
-				// Offset is inside XY plane.
-				offset = Axis(rand.Intn(2) + 1).Vector()
+				// Offset is on a curve.
+				offset = m.Curve.OffsetRandom(i)
 			} else {
 				offset = Axis(rand.Intn(3) + 1).Vector()
 			}
