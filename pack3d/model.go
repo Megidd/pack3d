@@ -7,8 +7,6 @@ import (
 	"github.com/fogleman/fauxgl"
 )
 
-// TODO: Play with allowed rotations.
-// TODO: Could we limit allowed translations too? To limit the translations to a curve for example.
 var Rotations []fauxgl.Matrix
 
 func init() {
