@@ -72,7 +72,7 @@ type Model struct {
 // 3. The only transformations allowed are moving along X and Y and rotating around Z axis.
 // 4. The bottom of all 3D models are aligned on the 3D print floor.
 func NewModel(restricted bool) *Model {
-	h = NewHelix(50, 40, 10)
+	h = NewHelix(30, 10, 4)
 
 	m := Model{
 		Items:      nil,
