@@ -4,9 +4,9 @@ import "github.com/fogleman/fauxgl"
 
 type Tree []fauxgl.Box
 
+// Local origin of mesh should already be set properly by the caller.
 func NewTreeForMesh(mesh *fauxgl.Mesh, depth int) Tree {
 	mesh = mesh.Copy()
-	mesh.Center()
 	boxes := make([]fauxgl.Box, len(mesh.Triangles))
 	for i, t := range mesh.Triangles {
 		boxes[i] = t.BoundingBox()
